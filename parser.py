@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 # MongoDB setup
 client = MongoClient('mongodb://localhost:27017/')
 db = client['cs4250']
-pages_collection = db['pages']       # Collection containing HTML data
+pages_collection = db['pages'] # Collection containing HTML data
 professors_collection = db['professors']  # New collection for professors' data
 
 def extract_professor_data(html):
