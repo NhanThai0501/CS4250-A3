@@ -12,7 +12,7 @@ from bs4 import BeautifulSoup
 # MongoDB setup
 client = MongoClient('mongodb://localhost:27017/')
 db = client['cs4250']
-pages_collection = db['pages'] # Collection containing HTML data
+pages_collection = db['pages']       # Collection containing HTML data
 professors_collection = db['professors']  # New collection for professors' data
 
 def extract_professor_data(html):
@@ -25,10 +25,10 @@ def extract_professor_data(html):
     # Locate all <div class="clearfix"> elements containing faculty info
     faculty_sections = soup.find_all('div', class_='clearfix')
     if not faculty_sections:
-        print("[DEBUG] No 'clearfix' sections found. Verify the HTML structure.")
+        print("Error: No 'clearfix' sections found. Verify the HTML structure.")
         return []
 
-    print(f"[DEBUG] Found {len(faculty_sections)} faculty entries in the HTML.")
+    print(f"Found {len(faculty_sections)} faculty entries in the HTML.")
 
     order = 1  # Initialize order for professors
     for section in faculty_sections:
@@ -44,8 +44,7 @@ def extract_professor_data(html):
 
             # Skip entries with no name
             if not name:
-                print(f"[DEBUG] Skipping entry with missing name at order {order}.")
-                order += 1
+                print(f"Error: Skipping entry with missing name at order {order}.")
                 continue
 
             # Initialize details
@@ -76,10 +75,15 @@ def extract_professor_data(html):
                     elif "web" in label:
                         web_tag = strong_tag.find_next('a', href=True)
                         website = web_tag['href'] if web_tag else None
+            
+            # Check if all required fields are present
+            # if not all([name, title, office, phone, email, website]):
+            #     print(f"Skipping entry at order {order} due to missing fields.")
+            #     continue  # Skip this entry without incrementing order
 
-            # Debugging output for each professor
+            # Show output for each professor
             print(
-                f"[DEBUG] Extracted (Order {order}): Name: {name}, Title: {title}, Office: {office}, Phone: {phone}, Email: {email}, Website: {website}"
+                f"Extracted (Order {order}): Name: {name}, Title: {title}, Office: {office}, Phone: {phone}, Email: {email}, Website: {website}"
             )
 
             # Add the professor's data to the list
@@ -106,9 +110,9 @@ def persist_professor_data(professor_data):
     """
     if professor_data:
         professors_collection.insert_many(professor_data)
-        print(f"[DEBUG] Inserted {len(professor_data)} professors into the 'professors' collection.")
+        print(f"Inserted {len(professor_data)} professors into the 'professors' collection.")
     else:
-        print("[DEBUG] No professor data found to persist.")
+        print("Error: No professor data found to persist.")
 
 # Main execution
 if __name__ == "__main__":
@@ -117,7 +121,7 @@ if __name__ == "__main__":
     page = pages_collection.find_one({'url': target_url})
 
     if not page:
-        print("[DEBUG] Permanent Faculty page not found in the database.")
+        print("Error: Permanent Faculty page not found in the database.")
     else:
         # Extract HTML content from the database
         html = page['html']
